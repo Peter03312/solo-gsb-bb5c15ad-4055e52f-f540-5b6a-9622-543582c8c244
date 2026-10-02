@@ -1,0 +1,26 @@
+services:
+  callboard:
+    build: .
+    image: rehearsal-callboard:latest
+    container_name: rehearsal-callboard
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-3000}:3000"
+    environment:
+      # 全部配置项均可在此覆盖（详见 README）
+      PORT: "3000"
+      DB_PATH: /data/callboard.db
+      SESSION_SECRET: "${SESSION_SECRET:-please-change-this-secret}"
+      TZ: "${TZ:-Asia/Shanghai}"
+      SEED_DEMO: "${SEED_DEMO:-true}"
+    volumes:
+      - callboard-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/me').then(r=>process.exit(r.status===401?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  callboard-data:
